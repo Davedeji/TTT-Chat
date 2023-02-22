@@ -1,0 +1,38 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.App {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.app_heading {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.game_board {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(3, auto);
+  /* use to set spacing between cells (line thickness) */
+  grid-gap: 0.5rem;
+  margin-top: 2rem;
+  background-color: #000;
+}
+
+svg {
+  stroke-width: 15px;
+  stroke: black;
+  fill: none;
+  stroke-linecap: round;
+}
