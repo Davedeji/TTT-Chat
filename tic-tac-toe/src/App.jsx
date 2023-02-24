@@ -10,16 +10,14 @@ import useScrollBlock from './useScrollBlock';
 const socket = io("http://localhost:4000");
 
 const App = () => {
-  /**
-   * currentPlayer: CIRCLE
-   */
-  // const [currentPlayer, setCurrentPlayer] = useState(CIRCLE)
   const [myPlayer, setMyPlayer] = useState(null);
   const [positions, setPositions] = useState([
       EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY
   ]);
   const [winner, setWinner] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [messages, setMessages] = useState([]);
+  localStorage.setItem('userName', socket.id);
 
   const handlePlayerMove = (position) => {
     if (gameStarted === false) {
@@ -32,13 +30,6 @@ const App = () => {
 
     socket.emit('playerMove', position, myPlayer);
   };
-
-  const onConnection = () => {
-    console.log('Connected to server');
-    // retrieve current game state
-    socket.emit('getGameState');
-    // listen for game state
-  }
 
   useEffect(() => {
     socket.on('gameUpdate', (newPositions, currentPlayer, gameWinner, gameInProgress) => {
@@ -56,6 +47,10 @@ const App = () => {
       setMyPlayer(player);
     })
   }, []);
+
+  useEffect(() => {
+      socket.on('messageResponse', (data) => setMessages([...messages, data]));
+  }, [socket, messages]);
 
   return (
     <div className="App">
@@ -77,8 +72,8 @@ const App = () => {
       </div>
       <div className="game_chat">
         {/* <h2>Cat</h2> */}
-        <ChatBody/>
-        <ChatFooter/>
+        <ChatBody messages={messages}/>
+        <ChatFooter socket={socket}/>
       </div>
 
       
