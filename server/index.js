@@ -14,8 +14,8 @@ const initializedPositions = [
 var positions = initializedPositions;
 var playerTurn = CROSS;
 var gameInProgress = false;
-var player1 = {clientID: null, playAs: CIRCLE};
-var player2 = {clientID: null, playAs: CROSS};
+var player1 = {clientID: null, playAs: CROSS};
+var player2 = {clientID: null, playAs: CIRCLE};
 var spectate = [];
 
 app.use(cors());
@@ -28,6 +28,10 @@ const socketIO = require('socket.io')(http, {
 
 socketIO.on('connection', (socket) => {
     addClient(socket);
+    socket.on('message', (data) => {
+        console.log(data);
+        socketIO.emit('messageResponse', data);
+      });
     socket.on('disconnect', () => {
       console.log(`🔥: A user disconnected ${socket.id}`);
       removeClient(socket);
@@ -62,7 +66,7 @@ const setPlayer = (socket, player) => {
     player.clientID = socket.id;
     socketIO.to(player.clientID).emit('myPlayerUpdate', player.playAs);
   }
-  console.log('🚀: setPlayer -> player, playAs', player);
+  console.log('🚀: setPlayer -> player', player);
 }
 const removeClient = (socket) => {
     if (player1.clientID === socket.id) {
@@ -73,9 +77,19 @@ const removeClient = (socket) => {
     else {
         spectate.splice(spectate.indexOf(socket.id), 1);
     }
+    if (player1.clientID === null && player2.clientID === null) {
+      resetGame();
+    }
     socketIO.to(socket.id).emit('myPlayerUpdate', null);
     setGameInProgress();
 };
+
+const resetGame = () => {
+  positions = initializedPositions;
+  playerTurn = CROSS;
+  gameInProgress = false;
+  console.log('🚀: resetGame ');
+}
 
 const setGameInProgress = () => {
   if (player1.clientID !== null && player2.clientID !== null) {

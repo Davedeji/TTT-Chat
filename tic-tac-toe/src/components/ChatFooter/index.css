@@ -1,7 +1,8 @@
 .chat__footer {
      width: 100%;
      padding: 10px;
-     background-color: #f9f5eb;
+     /* background-color: #f9f5eb; */
+     background-color: #e8e8e8;
      height: 5vh;
    }
 .form {
@@ -21,13 +22,14 @@
 }
 .sendBtn {
      width: 150px;
-     background-color: black;
+     background-color: #1b6bff;
      margin-left: 10px;
      padding: 10px;
      border: none;
      outline: none;
      color: #eae3d2;
      cursor: pointer;
+     font-weight: 800;
 }
 .sendBtn:hover {
      background-color: rgb(129, 201, 129);

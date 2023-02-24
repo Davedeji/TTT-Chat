@@ -11,7 +11,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 20px;
-      background-color: #f9f5eb;
+      background-color: #000000;
+      color: #FFFF;
     }
 .leaveChat__btn {
       padding: 10px;
@@ -21,12 +22,12 @@
       background-color: #bf3712;
       cursor: pointer;
       color: #eae3d2;
+      font-weight: 800;
     }
 .message__container {
-      /* min-width: 150%; */
       width: 100%;
       height: 90vh;
-      background-color: #fff;
+      background-color: #f2f1f1;
       padding: 20px;
       overflow-y: scroll;
     }
@@ -36,15 +37,19 @@
     }
 
 .message__recipient {
-      background-color: #f5ccc2;
-      max-width: 150px;
+      background-color: #e0e0e2;
+      color: #000000;
+      max-width: 250px;
+      width: fit-content;
       padding: 10px;
       border-radius: 10px;
       font-size: 15px;
     }
 .message__sender {
-      background-color: rgb(194, 243, 194);
-      max-width: 150px;
+      background-color: #1b6bff;
+      color: #FFFF;
+      max-width: 250px;
+      width: fit-content;
       padding: 10px;
       border-radius: 10px;
       margin-left: auto;
