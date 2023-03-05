@@ -1,0 +1,9 @@
+{
+    "name": "firebase-lambda",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+        "@aws-sdk/client-apigatewaymanagementapi-node": "^0.1.0-preview.2",
+        "firebase-admin": "9.6.0"
+    }
+}
