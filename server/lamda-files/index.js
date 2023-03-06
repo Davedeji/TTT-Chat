@@ -34,6 +34,7 @@ const sendToAll = async (ids, body) => {
     await Promise.all(promises);
     console.log('🚀: sendToAll -> message sent', ids, body);
 };
+
 const sendToOne = async (id, body) => {
     try {
         const postToConnectionCommand = new PostToConnectionCommand({
@@ -205,7 +206,22 @@ const retrieveGameData = async () => new Promise((resolve, reject) => {
     });
   });
 
-exports.handler = async (event, context, callback) => {   
+const handleIdRequest = async (connectionId) => {
+  if (connectionId === player1.clientID) {
+    console.log('🚀: handler: Request for ID: player1');
+    await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player1.playAs, setID: player1.clientID}});
+  }
+  else if (connectionId === player2.clientID) {
+    console.log('🚀: handler: Request for ID: player2');
+    await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player2.playAs, setID: player2.clientID}});
+  }
+  else if (connectionId in spectate) {
+    console.log('🚀: handler: Request for ID: spectate');
+    await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: null, setID: connectionId}});
+  }
+};
+
+exports.handler = async (event) => {   
     await retrieveGameData();
 
     if (event.requestContext) {
@@ -223,7 +239,6 @@ exports.handler = async (event, context, callback) => {
             console.log(e);
         }
         
-
         switch (routeKey) {
             case '$connect':
                 names[connectionId] = 'anonymous';
@@ -235,18 +250,7 @@ exports.handler = async (event, context, callback) => {
                 break;
             case '$default':
                 sendGameboardUpdate();
-                if (connectionId === player1.clientID) {
-                  console.log('🚀: handler: Request for ID: player1');
-                  await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player1.playAs, setID: player1.clientID}});
-                }
-                else if (connectionId === player2.clientID) {
-                  console.log('🚀: handler: Request for ID: player2');
-                  await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player2.playAs, setID: player2.clientID}});
-                }
-                else if (connectionId in spectate) {
-                  console.log('🚀: handler: Request for ID: spectate');
-                  await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: null, setID: connectionId}});
-                }
+                handleIdRequest(connectionId);
                 break;
             case 'playerMove':
                 console.log('🚀: handler -> playermove', body);
