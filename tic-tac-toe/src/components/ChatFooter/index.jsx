@@ -1,5 +1,7 @@
 import "./index.css"
 import React, { useState } from 'react';
+import uuid from 'react-uuid';
+
 
 const ChatFooter = ({socket}) => {
   const [message, setMessage] = useState('');
@@ -7,12 +9,13 @@ const ChatFooter = ({socket}) => {
   const handleSendMessage = (e) => {
         e.preventDefault();
         if (message.trim()) {
-          socket.emit('message', {
+          socket.current?.send(JSON.stringify({
+            action: 'sendMessage',
             text: message,
             name: localStorage.getItem('userName'),
-            id: `${socket.id}${Math.random()}`,
-            socketID: socket.id,
-          });
+            id: uuid(),
+            socketID: localStorage.getItem('socketID'),
+          }));
         }
         setMessage('');
       };
