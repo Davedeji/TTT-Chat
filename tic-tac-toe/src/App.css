@@ -1,5 +1,5 @@
 #root {
-  max-width: 1500px;
+  /* max-width: 1500px; */
   margin: 0 auto;
   /* padding: 2rem; */
   /* text-align: center; */
@@ -16,7 +16,7 @@
 }
 
 .game_section {
-  max-width: 1280px;
+  /* max-width: 1280px; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: center;
   width: 40%;
-  max-width: 400px;
+  /* max-width: 400px; */
   height: 100vh;
 }
 

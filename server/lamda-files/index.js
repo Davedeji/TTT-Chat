@@ -1,4 +1,3 @@
-// import * as AWS from "@aws-sdk/client-apigatewaymanagementapi";
 const {
   ApiGatewayManagementApiClient
 } = require("@aws-sdk/client-apigatewaymanagementapi-node/ApiGatewayManagementApiClient");
@@ -17,16 +16,16 @@ const db = admin.firestore();
 const ENDPOINT = 'https://qrhbqpzwsb.execute-api.us-west-2.amazonaws.com/production/';
 const client = new ApiGatewayManagementApiClient({endpoint: ENDPOINT});
 
-const names = {};
+var names = {};
 const initializedPositions = [
     "EMPTY", "EMPTY", "EMPTY", "EMPTY", "EMPTY", "EMPTY", "EMPTY", "EMPTY", "EMPTY"
   ];
-  var positions = initializedPositions;
-  var playerTurn = "CROSS";
-  var gameInProgress = false;
-  var player1 = {clientID: null, playAs: "CROSS"};
-  var player2 = {clientID: null, playAs: "CIRCLE"};
-  var spectate = [];
+var positions = initializedPositions;
+var playerTurn = "CROSS";
+var gameInProgress = false;
+var player1 = {clientID: null, playAs: "CROSS"};
+var player2 = {clientID: null, playAs: "CIRCLE"};
+var spectate = [];
 
 const sendToAll = async (ids, body) => {
     const promises = ids.map(id => {
@@ -42,12 +41,10 @@ const sendToOne = async (id, body) => {
           Data: JSON.stringify(body)
         });
         client.send(postToConnectionCommand).then(data => {
-            // do something
             console.log('🚀: sendToOne -> messageSent', data);
         }).catch(error => {
-            // error handling
+            console.log('🚀: sendToOne -> error', error);
         })
-        // await client.postToConnection();
     }
     catch (e) {
         console.log('🚀: sendToOne -> e', e);
@@ -55,7 +52,6 @@ const sendToOne = async (id, body) => {
     
 };
 
-////////////////////////////////////////
 const addClient = async (socketID) => {
     console.log(`⚡: ${socketID} user just connected!`);
     switch (null) {
@@ -71,9 +67,6 @@ const addClient = async (socketID) => {
         setPlayer(socketID, null);
         break;
     }
-    // await sendToAll([socketID], {type: "setID", setID: socketID});
-    // await sendToOne(socketID, {type: "setID", setID: socketID});
-    sendToAll(Object.keys(names), {type: "publicMessage", publicMessage: `⚡: ${socketID} user just connected!`});
     setGameInProgress();
     sendGameboardUpdate();
 };
@@ -83,14 +76,9 @@ const setPlayer = async (socketID, player) => {
   }
   else {
     player.clientID = socketID;
-    // broadcast player update
-    // socketIO.to(player.clientID).emit('myPlayerUpdate', player.playAs);
-    // await new Promise(resolve => setTimeout(resolve, 1000)); 
     sendToAll([socketID], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player.playAs, setID: socketID}});
-    // await sendToOne(socketID, {type: 'myPlayerUpdate', myPlayerUpdate: player.playAs});
   }
   console.log('🚀: setPlayer -> player', player);
-  // await saveGameData();
 }
 const removeClient = async (socketID) => {
     console.log(`⚡: ${socketID} user just disconnected!`);
@@ -102,16 +90,12 @@ const removeClient = async (socketID) => {
     else {
         spectate.splice(spectate.indexOf(socketID), 1);
     }
-    if (player1.clientID === null && player2.clientID === null) {
+    if (player1.clientID === null || player2.clientID === null) {
       resetGame();
     }
-    // broadcast player update
-    // socketIO.to(socket.id).emit('myPlayerUpdate', null);
     sendToAll([socketID], {myPlayerUpdate: {playAs: null, setID: null}});
-    // await sendToOne(socketID, {myPlayerUpdate: null});
     setGameInProgress();
     sendGameboardUpdate();
-    // saveGameData();
 };
 
 const resetGame = () => {
@@ -128,17 +112,8 @@ const setGameInProgress = () => {
   else {
     gameInProgress = false;
   }
-  // broadcast game start update
-//   socketIO.emit('gameStarted', gameInProgress);
   sendToAll(Object.values(names), {gameStarted : gameInProgress});
-  // saveGameData();
   console.log('🚀: setGameInProgress -> gameInProgress', gameInProgress);
-};
-
-const logPlayers = () => {
-  console.log('🚀: logPlayers -> player1', player1);
-  console.log('🚀: logPlayers -> player2', player2);
-  console.log('🚀: logPlayers -> spectate', spectate);
 };
 
 const winningCombinations = [
@@ -162,8 +137,6 @@ const handlePlayerMove = (index, player) => {
 };
 
 const sendGameboardUpdate = () => {
-    // broadcast game update
-//   socketIO.emit('gameUpdate', positions, playerTurn, checkGameWinner(), gameInProgress);
   const winner = checkGameWinner();
   sendToAll(Object.keys(names), {type: 'gameUpdate', gameUpdate: {positions, playerTurn, winner, gameInProgress}});
 };
@@ -186,28 +159,15 @@ const checkGameWinner = () => {
   return null;
 };
 
-// const retrieveGameData = () => {
-//   db.collection('tic-tac-data').doc('test').get().then((doc) => {
-//     if (doc.exists) {
-//       console.log('🚀: retrieveGameData -> doc.data()', doc.data());
-//     }
-//     else {
-//       console.log('🚀: retrieveGameData -> No such document!');
-//     }
-//   }).catch((error) => {
-//     console.log('🚀: retrieveGameData -> Error getting document:', error);
-//   });
-
-// }
 const saveGameData = async () => new Promise((resolve, reject) =>{
-  console.log('🚀: saveGameData -> saving game data');
   const data = {
     player1: JSON.stringify(player1),
     player2: JSON.stringify(player2),
     positions: JSON.stringify(positions),
     playerTurn: JSON.stringify(playerTurn),
     gameInProgress: JSON.stringify(gameInProgress),
-    spectate: JSON.stringify(spectate)
+    spectate: JSON.stringify(spectate),
+    names: JSON.stringify(names)
   }
   db.collection('tic-tac-data').doc('game-data').set({
     data
@@ -215,7 +175,7 @@ const saveGameData = async () => new Promise((resolve, reject) =>{
     console.log('🚀: saveGameData -> Document successfully written!');
     resolve();
   }).catch((error) => {
-    console.error('🚀: saveGameData -> Error writing document: ', error);
+    console.log('🚀: saveGameData -> Error writing document: ', error);
     reject();
   });
   console.log('🚀: saveGameData -> Saved game data');
@@ -225,7 +185,7 @@ const retrieveGameData = async () => new Promise((resolve, reject) => {
 
     db.collection('tic-tac-data').doc('game-data').get().then((doc) => {
       if (doc.exists) {
-        console.log('🚀: retrieveGameData -> doc.data()', doc.data());
+        console.log('🚀: retrieveGameData -> data', doc.data());
         const data = doc.data().data;
         player1 = JSON.parse(data.player1);
         player2 = JSON.parse(data.player2);
@@ -233,12 +193,7 @@ const retrieveGameData = async () => new Promise((resolve, reject) => {
         playerTurn = JSON.parse(data.playerTurn);
         gameInProgress = JSON.parse(data.gameInProgress);
         spectate = JSON.parse(data.spectate);
-        console.log('🚀: retrieveGameData -> player1', player1);
-        console.log('🚀: retrieveGameData -> player2', player2);
-        console.log('🚀: retrieveGameData -> positions', positions);
-        console.log('🚀: retrieveGameData -> playerTurn', playerTurn);
-        console.log('🚀: retrieveGameData -> gameInProgress', gameInProgress);
-        console.log('🚀: retrieveGameData -> spectate', spectate);
+        names = JSON.parse(data.names);
       }
       else {
         console.log('🚀: retrieveGameData -> No such document!');
@@ -250,31 +205,8 @@ const retrieveGameData = async () => new Promise((resolve, reject) => {
     });
   });
 
-// exports.handler = (event, context, callback) => {
-//   // Write a simple document with two fields
-//   const data = {
-//     message: "Hello, world!",
-//     timestamp: new Date()
-//   };
-
-//   db.collection('lambda-docs').add(data).then((ref) => {
-//     // On a successful write, return an object
-//     // containing the new doc id.
-//     callback(null, {
-//       id: ref.id
-//     });
-//   }).catch((err) => {
-//     // Forward errors if the write fails
-//     callback(err);
-//   });
-
-
 exports.handler = async (event, context, callback) => {   
-    // firebaseFirestore = admin.firestore();
-    // console.log('🚀: handler -> firestpre', db);
     await retrieveGameData();
-    console.log('🚀: handler -> continue');
-    console.log('🚀: handler -> names', names);
 
     if (event.requestContext) {
         const connectionId = event.requestContext.connectionId;
@@ -296,19 +228,13 @@ exports.handler = async (event, context, callback) => {
             case '$connect':
                 names[connectionId] = 'anonymous';
                 await addClient(connectionId);
-                // await new Promise(resolve => setTimeout(resolve, 500)); 
-                // await sendToAll([connectionId], {type: 'ping', ping: null});
-
-                // saveGameData();
-                // retrieveGameData();
-                
                 break;
             case '$disconnect':
                 delete names[connectionId];
                 removeClient(connectionId);
                 break;
             case '$default':
-                console.log('🚀: handler -> default: Request for ID', connectionId, player1.clientID, player2.clientID);
+                sendGameboardUpdate();
                 if (connectionId === player1.clientID) {
                   console.log('🚀: handler: Request for ID: player1');
                   await sendToAll([connectionId], {type: 'myPlayerUpdate', myPlayerUpdate: {playAs: player1.playAs, setID: player1.clientID}});
@@ -343,10 +269,7 @@ exports.handler = async (event, context, callback) => {
         }
     }
 
-
     await saveGameData();
-
-    // TODO implement
     const response = {
         statusCode: 200,
         body: JSON.stringify('Hello from Lambda!'),
